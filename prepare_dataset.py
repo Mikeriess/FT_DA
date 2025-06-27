@@ -7,9 +7,32 @@ Splits by conversation_id to avoid data leakage between train/val sets.
 from datasets import load_dataset
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from datasets import Dataset, DatasetDict
+
+def _transform_messages(example):
+    """
+    Transforms the message format from {'poster_id': ..., 'text': ...}
+    to the required {'role': ..., 'content': ...} format.
+    - poster_id 1 -> role 'user'
+    - poster_id 2 -> role 'assistant'
+    """
+    new_messages = []
+    for message in example['synthetic_messages']:
+        role = "unknown"
+        if message['poster_id'] == 1:
+            role = "user"
+        elif message['poster_id'] == 2:
+            role = "assistant"
+        
+        new_messages.append({
+            "role": role,
+            "content": message['text']
+        })
+    example['synthetic_messages'] = new_messages
+    return example
 
 def create_conversation_split():
-    """Split dataset by conversation_id to avoid leakage."""
+    """Split dataset by conversation_id and transform message format."""
     
     # Load the dataset
     print("Loading dataset...")
@@ -40,10 +63,14 @@ def create_conversation_split():
     print(f"Val samples: {len(val_df)}")
     
     # Convert back to datasets
-    from datasets import Dataset, DatasetDict
-    
     train_dataset = Dataset.from_pandas(train_df)
     val_dataset = Dataset.from_pandas(val_df)
+    
+    # Apply the transformation to fix the message format
+    print("\nTransforming message format for training set...")
+    train_dataset = train_dataset.map(_transform_messages, num_proc=4)
+    print("Transforming message format for validation set...")
+    val_dataset = val_dataset.map(_transform_messages, num_proc=4)
     
     # Create DatasetDict
     dataset_dict = DatasetDict({

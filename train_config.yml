@@ -7,16 +7,17 @@ load_in_4bit: false
 strict: false
 
 datasets:
-  - path: mikeriess/LM_dialogues_3k_gemma_2_27b_prompt1
+  - path: ./data/danish_dialogues_split
     type: chat_template
     chat_template: chatml
-    field_messages: messages
+    field_messages: synthetic_messages
     train_split: train
+    val_split: validation
     roles_to_train: ["assistant"]
     train_on_eos: "turn"
 
 dataset_prepared_path: last_run_prepared
-val_set_size: 0.15
+# val_set_size: 0.15  # Removed - using pre-split dataset
 seed: 42  # Ensures reproducible train/val splits
 output_dir: ./outputs/lora-out
 
@@ -27,6 +28,7 @@ sequence_len: 2048
 sample_packing: true
 eval_sample_packing: false #false as the dataset is very small and cannot be packed
 pad_to_sequence_len: true
+chat_template: chatml
 
 lora_r: 8
 lora_alpha: 16
@@ -40,10 +42,13 @@ lora_target_modules:
   - v_proj
   - k_proj
   - o_proj
+lora_modules_to_save:
+  - embed_tokens
+  - lm_head
 
-wandb_project: "Llama-3.2-1B_LM"
-wandb_entity: "mikeriess"
-wandb_log_model: "all"
+wandb_project: "FT_DA"
+wandb_entity: "mikeriessdk"
+wandb_log_model: "checkpoint"
 
 # Save both adapter and merged model to HF
 save_safetensors: true
@@ -70,10 +75,13 @@ fp16:
 tf32: false
 
 gradient_checkpointing: true
-early_stopping_patience: 3
+# early_stopping_patience: 3 # disabled for now
+# load_best_model_at_end: true # disabled for now
+# metric_for_best_model: "eval_loss" # disabled for now
+# greater_is_better: false # disabled for now
 resume_from_checkpoint:
 local_rank:
-logging_steps: 1
+logging_steps: 10
 xformers_attention:
 flash_attention: true
 
@@ -81,6 +89,10 @@ loss_watchdog_threshold: 5.0
 loss_watchdog_patience: 3
 
 warmup_steps: 50
+# evaluation_strategy: "steps" # disabled for now
+# save_strategy: "steps" # disabled for now
+# eval_steps: 50 # disabled for now
+# save_steps: 100 # disabled for now
 evals_per_epoch: 2
 saves_per_epoch: 1
 debug:
@@ -89,4 +101,6 @@ weight_decay: 0.01
 fsdp:
 fsdp_config:
 special_tokens:
-  pad_token: "<|end_of_text|>"
+  bos_token: "<|im_start|>"
+  eos_token: "<|im_end|>"
+  pad_token: "<|im_end|>"

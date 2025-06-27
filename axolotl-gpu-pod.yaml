@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: axolotl-gpu
+spec:
+  containers:
+    - name: axolotl
+      image: axolotlai/axolotl:main-latest
+      command: ["/bin/bash", "-c", "--"]
+      args: ["sleep infinity"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+  restartPolicy: Never
