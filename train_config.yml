@@ -12,12 +12,12 @@ datasets:
     chat_template: chatml
     field_messages: messages
     train_split: train
-    val_split: validation
     roles_to_train: ["assistant"]
     train_on_eos: "turn"
 
 dataset_prepared_path: last_run_prepared
-val_set_size: 0.1
+val_set_size: 0.15
+seed: 42  # Ensures reproducible train/val splits
 output_dir: ./outputs/lora-out
 
 adapter: lora
@@ -28,8 +28,8 @@ sample_packing: true
 eval_sample_packing: false #false as the dataset is very small and cannot be packed
 pad_to_sequence_len: true
 
-lora_r: 16
-lora_alpha: 32
+lora_r: 8
+lora_alpha: 16
 lora_dropout: 0.05
 lora_fan_in_fan_out:
 lora_target_modules:
@@ -58,10 +58,10 @@ codecarbon_dir: "emissions"
 
 gradient_accumulation_steps: 2
 micro_batch_size: 2
-num_epochs: 1
+num_epochs: 3
 optimizer: adamw_8bit
 lr_scheduler: cosine
-learning_rate: 0.0002
+learning_rate: 0.0001
 
 train_on_inputs: false
 group_by_length: false
@@ -70,7 +70,7 @@ fp16:
 tf32: false
 
 gradient_checkpointing: true
-early_stopping_patience:
+early_stopping_patience: 3
 resume_from_checkpoint:
 local_rank:
 logging_steps: 1
@@ -80,12 +80,12 @@ flash_attention: true
 loss_watchdog_threshold: 5.0
 loss_watchdog_patience: 3
 
-warmup_steps: 10
-evals_per_epoch: 4
+warmup_steps: 50
+evals_per_epoch: 2
 saves_per_epoch: 1
 debug:
 deepspeed:
-weight_decay: 0.0
+weight_decay: 0.01
 fsdp:
 fsdp_config:
 special_tokens:
