@@ -36,7 +36,8 @@ def create_conversation_split():
     
     # Load the dataset
     print("Loading dataset...")
-    dataset = load_dataset("mikeriess/LM_dialogues_3k_gemma_2_27b_prompt1", split="train")
+    #dataset = load_dataset("mikeriess/LM_dialogues_3k_gemma_2_27b_prompt1", split="train")
+    dataset = load_dataset("mikeriess/LM_dialogues_30k_4096_gemma_3_27b", split="train")
     
     # Convert to pandas for easier manipulation
     df = pd.DataFrame(dataset)
@@ -61,6 +62,19 @@ def create_conversation_split():
     print(f"Train samples: {len(train_df)}")
     print(f"Val conversations: {len(val_conv_ids)}")
     print(f"Val samples: {len(val_df)}")
+    
+    # --- Add filtering step ---
+    # Remove rows where 'synthetic_messages' is not a list or is empty.
+    print("\nFiltering out empty or invalid message lists...")
+    initial_train_count = len(train_df)
+    initial_val_count = len(val_df)
+    
+    train_df = train_df[train_df['synthetic_messages'].apply(lambda x: isinstance(x, list) and len(x) > 0)]
+    val_df = val_df[val_df['synthetic_messages'].apply(lambda x: isinstance(x, list) and len(x) > 0)]
+    
+    print(f"Removed {initial_train_count - len(train_df)} empty/invalid samples from training set.")
+    print(f"Removed {initial_val_count - len(val_df)} empty/invalid samples from validation set.")
+    # --- End filtering step ---
     
     # Convert back to datasets
     train_dataset = Dataset.from_pandas(train_df)

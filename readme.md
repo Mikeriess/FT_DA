@@ -59,6 +59,7 @@ python prepare_dataset.py
 The `train_config.yml` is pre-configured. Start the training process:
 
 ```bash
+cd ../
 accelerate launch -m axolotl.cli.train train_config.yml
 ```
 
