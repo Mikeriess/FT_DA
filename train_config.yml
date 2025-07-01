@@ -52,7 +52,7 @@ wandb_log_model: "checkpoint"
 
 # Save both adapter and merged model to HF
 save_safetensors: true
-hub_save_adapter: true 
+hub_save_adapter: false 
 hub_save_merged: true
 hub_strategy: "every_save"
 push_hub: true
@@ -62,8 +62,8 @@ track_carbon_emissions: false
 codecarbon_dir: "emissions"
 
 gradient_accumulation_steps: 2
-micro_batch_size: 2
-num_epochs: 3
+micro_batch_size: 8
+num_epochs: 1
 optimizer: adamw_8bit
 lr_scheduler: cosine
 learning_rate: 0.0001
@@ -88,13 +88,13 @@ flash_attention: true
 loss_watchdog_threshold: 5.0
 loss_watchdog_patience: 3
 
-warmup_steps: 50
+warmup_steps: 100
 # evaluation_strategy: "steps" # disabled for now
 # save_strategy: "steps" # disabled for now
 # eval_steps: 50 # disabled for now
 # save_steps: 100 # disabled for now
-evals_per_epoch: 2
-saves_per_epoch: 1
+evals_per_epoch: 10
+saves_per_epoch: 5
 debug:
 deepspeed:
 weight_decay: 0.01
