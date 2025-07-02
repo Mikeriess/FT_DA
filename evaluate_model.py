@@ -85,13 +85,15 @@ def run_euroeval_benchmark(model_id, eval_dir, language="da", split="validation"
     log_file = os.path.join(eval_dir, f"euroeval_log_{timestamp}.txt")
     
     # EuroEval command with specific parameters
+    # Force use of transformers backend instead of vLLM to support LoRA adapters
     cmd = [
         "euroeval",
         "--model", model_id,
         "--language", language,
         "--split", split,
         "--save-results",
-        "--verbose"
+        "--verbose",
+        "--batch-size", "1"  # Smaller batch size for transformers backend
     ]
     
     try:
